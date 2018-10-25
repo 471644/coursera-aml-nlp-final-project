@@ -63,9 +63,9 @@ class DialogueManager(object):
         # Recognize intent of the question using `intent_recognizer`.
         # Don't forget to prepare question and calculate features for the question.
         
-        prepared_question = text_prepare(prepared_question)
+        prepared_question = text_prepare(question)
         features = self.tfidf_vectorizer.transform([prepared_question])
-        intent = self.intent_recognizer.predict()[0]
+        intent = self.intent_recognizer.predict(features)[0]
 
         # Chit-chat part:   
         if intent == 'dialogue':
@@ -76,7 +76,7 @@ class DialogueManager(object):
         # Goal-oriented part:
         else:        
             # Pass features to tag_classifier to get predictions.
-            tag = self.tag_classifier.predict(prepared_question)
+            tag = self.tag_classifier.predict(features)[0]
             
             # Pass prepared_question to thread_ranker to get predictions.
             thread_id = self.thread_ranker.get_best_thread(question, tag)
