@@ -1,3 +1,5 @@
+# encoding=utf8
+
 import os
 from sklearn.metrics.pairwise import pairwise_distances_argmin
 

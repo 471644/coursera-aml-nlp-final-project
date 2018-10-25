@@ -1,3 +1,5 @@
+# encoding=utf8
+
 import nltk
 import pickle
 import re
