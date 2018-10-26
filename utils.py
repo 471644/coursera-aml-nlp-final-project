@@ -1,29 +1,27 @@
 # encoding=utf8
 
-import nltk
 import pickle
 import re
 import numpy as np
-
-nltk.download('stopwords')
-from nltk.corpus import stopwords
+import scipy
+import shelve
 
 # Paths for all resources for the bot.
 RESOURCE_PATH = {
     'INTENT_RECOGNIZER': './models/intent_recognizer.pkl',
     'TAG_CLASSIFIER': './models/tag_classifier.pkl',
-    'TFIDF_VECTORIZER': './models/tfidf_vectorizer.pkl',
+    'HASHING_VECTORIZER': './models/hashing_vectorizer.pkl',
     'THREAD_EMBEDDINGS_FOLDER': 'thread_embeddings_by_tags',
-    'WORD_EMBEDDINGS': './data/starspace_embeddings.tsv',
+    'WORD_EMBEDDINGS': './data/starspace_embeddings.shelve',
+    'STOP_WORDS': './data/stopwords.pkl'
 }
 
 
-def text_prepare(text):
+def text_prepare(text, stopwords_set):
     """Performs tokenization and simple preprocessing."""
     
     replace_by_space_re = re.compile('[/(){}\[\]\|@,;]')
     bad_symbols_re = re.compile('[^0-9a-z #+_]')
-    stopwords_set = set(stopwords.words('english'))
 
     text = text.lower()
     text = replace_by_space_re.sub(' ', text)
@@ -43,14 +41,10 @@ def load_embeddings(embeddings_path):
       embeddings - dict mapping words to vectors;
       embeddings_dim - dimension of the vectors.
     """
-    data = []
-    for line in open(embeddings_path, encoding='utf-8'):
-        data.append(line.strip().split('\t'))
-    embeddings_dims = list(map(lambda x: len(x) - 1, data))
-    embeddings_dim = max(set(embeddings_dims), key=lambda val: embeddings_dims.count(val))
-    embeddings = {line[0]: np.array(line[1:]).astype(np.float32) for line in data if len(line) - 1 == embeddings_dim}
+    embeddings = shelve.open(embeddings_path, 'r')
+    embeddings_dim = embeddings[list(embeddings.keys())[0]].shape[0]
     
-    return embeddings, embeddings[list(embeddings.keys())[-1]].shape[0]
+    return embeddings, embeddings_dim
 
 def question_to_vec(question, embeddings, dim):
     """
@@ -78,3 +72,10 @@ def unpickle_file(filename):
     """Returns the result of unpickling the file content."""
     with open(filename, 'rb') as f:
         return pickle.load(f)
+    
+def cos_cdist(matrix, vector):
+    """
+    Compute the cosine distances between each row of matrix and vector.
+    """
+    v = vector.reshape(1, -1)
+    return scipy.spatial.distance.cdist(matrix, v, 'cosine').reshape(-1)

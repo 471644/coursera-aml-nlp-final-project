@@ -68,7 +68,6 @@ class SimpleDialogueManager(object):
     
     def generate_answer(self, question): 
         return "Hello, world!" 
-        
 
 def main():
     args = parse_args()
@@ -88,8 +87,9 @@ def main():
     # This is the point where you plug it into the Telegram bot. 
     # Do not forget to import all needed dependencies when you do so.
     
-    simple_manager = DialogueManager(RESOURCE_PATH)
-    bot = BotHandler(token, simple_manager)
+    # dialogue_manager = SimpleDialogueManager()
+    dialogue_manager = DialogueManager(RESOURCE_PATH)
+    bot = BotHandler(token, dialogue_manager)
     
     ###############################################################
 
@@ -110,6 +110,7 @@ def main():
                         bot.send_message(chat_id, "Hmm, you are sending some weird characters to me...")
             offset = max(offset, update['update_id'] + 1)
         time.sleep(1)
-
+        # break
+        
 if __name__ == "__main__":
     main()

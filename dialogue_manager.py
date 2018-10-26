@@ -1,9 +1,7 @@
 # encoding=utf8
 
 import os
-from sklearn.metrics.pairwise import pairwise_distances_argmin
-
-from chatterbot import ChatBot
+# from chatterbot import ChatBot
 from utils import *
 
 
@@ -24,7 +22,7 @@ class ThreadRanker(object):
         thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
         
         question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
-        best_thread = pairwise_distances_argmin([question_vec], thread_embeddings, metric='cosine')[0]
+        best_thread = cos_cdist(thread_embeddings, question_vec).argmin()
         
         return thread_ids[best_thread]
 
@@ -32,10 +30,12 @@ class ThreadRanker(object):
 class DialogueManager(object):
     def __init__(self, paths):
         print("Loading resources...")
+        
+        self.stopwords_set = unpickle_file(RESOURCE_PATH['STOP_WORDS'])
 
         # Intent recognition:
         self.intent_recognizer = unpickle_file(paths['INTENT_RECOGNIZER'])
-        self.tfidf_vectorizer = unpickle_file(paths['TFIDF_VECTORIZER'])
+        self.vectorizer = unpickle_file(paths['HASHING_VECTORIZER'])
 
         self.ANSWER_TEMPLATE = 'I think its about %s\nThis thread might help you: https://stackoverflow.com/questions/%s'
 
@@ -61,8 +61,8 @@ class DialogueManager(object):
         # Recognize intent of the question using `intent_recognizer`.
         # Don't forget to prepare question and calculate features for the question.
         
-        prepared_question = text_prepare(question)
-        features = self.tfidf_vectorizer.transform([prepared_question])
+        prepared_question = text_prepare(question, self.stopwords_set)
+        features = self.vectorizer.transform([prepared_question])
         intent = self.intent_recognizer.predict(features)[0]
 
         # Chit-chat part:   
