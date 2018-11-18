@@ -13,7 +13,7 @@ RESOURCE_PATH = {
     'TAG_CLASSIFIER': 'models/tag_classifier.pkl',
     'HASHING_VECTORIZER': 'models/hashing_vectorizer.pkl',
     'THREAD_EMBEDDINGS_FOLDER': 'data/thread_embeddings_by_tags',
-    'WORD_EMBEDDINGS': 'data/starspace_embeddings.shelve',
+    'WORD_EMBEDDINGS': 'data/starspace_embeddings.db',
     'STOP_WORDS': 'data/stopwords.pkl',
     'CHIT-CHAT_MODEL_WEIGHTS': 'models/chit-chat_model_weights.h5'
 }
