@@ -3,13 +3,6 @@
  BCyan='\033[1;36m'
  NC='\033[0m'
  
- echo "${BCyan}Creating swapfile...${NC}"
- sudo dd if=/dev/zero of=/swapfile bs=1MB count=1200
- sudo chown root:root /swapfile
- sudo chmod 0600 /swapfile
- sudo mkswap /swapfile
- sudo swapon /swapfile
- 
  echo "${BCyan}Installing python dependencies...${NC}"
  sudo pip3 install -U pip
  sudo pip3 --no-cache-dir install -r requirements.txt
@@ -24,6 +17,13 @@
  
  cat > telegram_bot << EOF
 #!/bin/bash
+
+dd if=/dev/zero of=/swapfile bs=1MB count=1200
+chown root:root /swapfile
+chmod 0600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+
 python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
 EOF
 
