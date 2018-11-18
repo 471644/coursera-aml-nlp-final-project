@@ -29,7 +29,7 @@ EOF
 
  cat > telegram_bot << EOF
 #!/bin/bash
-tmux new-session -d -s "telegram_bot" $(pwd)/start_telegram_bot.sh
+tmux new-session -d -s "telegram_bot" tmux new -s telegram_bot -d "bash --init-file $(pwd)/start_telegram_bot.sh"
 EOF
 
 sudo mv telegram_bot /etc/init.d
