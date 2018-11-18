@@ -45,9 +45,20 @@ class DialogueManager(object):
         # Goal-oriented part:
         self.tag_classifier = unpickle_file(self.paths['TAG_CLASSIFIER'])
         self.thread_ranker = ThreadRanker(self.paths)
+        
+        # Chit-chat part:
+        self.create_chitchat_bot()
+        
+        print('Test chit-chat model:')
+        context = 'Hello!'
+        print('Context:', context)
+        print('Response:', GCA_response(self.encoder_model, self.decoder_model, context))
 
     def create_chitchat_bot(self):
         """Initializes self.chitchat_bot with some conversational model."""
+        
+        from keras.models import Model
+        from keras.layers import Input, Embedding, GRU, Dense, Lambda
 
         inp_context = Input(shape=(MAX_LEN,), dtype='int32', name='input_context')
         inp_reply = Input(shape=(MAX_LEN,), dtype='int32', name='input_utterance')
@@ -104,7 +115,7 @@ class DialogueManager(object):
 
         # Chit-chat part:   
         if intent == 'dialogue':
-            response = GCA_response(self.encoder_model, self.encoder_model, question)       
+            response = GCA_response(self.encoder_model, self.decoder_model, question)       
             return response
         
         # Goal-oriented part:

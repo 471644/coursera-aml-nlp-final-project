@@ -83,6 +83,8 @@ def cos_cdist(matrix, vector):
 
 # chit-chat utils
 
+MAX_LEN=32
+
 ALPHABET = [' ', '!', '"', '#', '$', '%', '&', "'", ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '=', '?', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', ']', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '~', '\x92', '\x93', '\x94', '\x96', '\x97', '£', '¹', 'Ç', 'Õ', 'à', 'ä', 'ç', 'è', 'é', 'ê', 'í', 'ñ', 'ó', 'ù', 'û']
 
 START_SYMBOL = 'START'
@@ -92,6 +94,10 @@ SPECIAL_CHARACHTERS = [PAD_SYMBOL, START_SYMBOL, END_SYMBOL]
 
 char2id = {c:i for i, c in enumerate(SPECIAL_CHARACHTERS + ALPHABET)}
 id2char = {i:c for i, c in enumerate(SPECIAL_CHARACHTERS + ALPHABET)}
+
+LATENT_DIM = 384
+EMBEDDINGS_DIM = 16
+VOCAB_SIZE = len(char2id)
 
 def text2seq(text, max_len):
     start = [char2id[START_SYMBOL]]
@@ -112,19 +118,20 @@ def seq2text(seq, remove_special=True):
   
     return text
 
-def GCA_response(encoder, decoder, context, max_steps=32):
+def GCA_response(encoder, decoder, context, max_steps=MAX_LEN):
   
     rnn_state = [np.zeros((1, LATENT_DIM))]
-    context = np.array(text2seq(context, max_steps)).reshape(1, -1)
+
+    context = np.array(text2seq(context, MAX_LEN)).reshape(1, -1)
     rnn_state = [encoder.predict([context] + rnn_state)]
     
-    response_partial = np.full((1, max_steps), char2id[PAD_SYMBOL])
+    response_partial = np.full((1, MAX_LEN), char2id[PAD_SYMBOL])
     response_partial[0, 0] = char2id[START_SYMBOL]
     
     response = []
     
-    for i in range(1, max_steps):
-        output_tokens, *rnn_state = decoder_model.predict([response_partial] + rnn_state)
+    for i in range(1, min(max_steps, MAX_LEN)):
+        output_tokens, *rnn_state = decoder.predict([response_partial] + rnn_state)
         
         sampled_token_index = np.argmax(output_tokens[0, 0])
         if sampled_token_index == char2id[END_SYMBOL]: break
@@ -132,6 +139,6 @@ def GCA_response(encoder, decoder, context, max_steps=32):
         response.append(sampled_token_index)
         response_partial[0, 0] = sampled_token_index
             
-    text = seq2text(response, remove_special=True)
+    text = seq2text(response, remove_special=False)
 
     return text

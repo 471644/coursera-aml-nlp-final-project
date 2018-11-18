@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # encoding=utf8
 
+import warnings
+warnings.filterwarnings("ignore")
+
 import requests
 import time
 import argparse
