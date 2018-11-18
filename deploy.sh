@@ -23,9 +23,7 @@
  echo "${BCyan}Creating service...${NC}"
  cat > telegram_bot << EOF
 #!/bin/bash
-tmux new -s telegram_bot
-python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
-tmux detach
+tmux new -s telegram_bot -d "python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN"
 EOF
 
 sudo mv telegram_bot /etc/init.d
