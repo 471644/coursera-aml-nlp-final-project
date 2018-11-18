@@ -54,7 +54,7 @@ Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2
 I chose Google Cloud f1-micro (1 vCPU, 0.6 GB memory) instance with minimized Ubuntu 16.04 LTS.
 
 ### Intallation
-Run following in your fresh VM instance's terminal:
+Run following commands in your fresh VM instance's terminal:
 
 ```
   sudo apt-get update
