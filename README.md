@@ -17,4 +17,6 @@ Run following in your VM instance's terminal:
   sudo apt-get install tmux apt-transport-https python3-pip
   
   git clone https://github.com/vBLFTePebWNi6c/coursera-aml-nlp-final-project.git
+  cd coursera-aml-nlp-final-project
+  sh deploy.sh
 ```
