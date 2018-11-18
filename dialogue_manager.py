@@ -21,12 +21,17 @@ class ThreadRanker(object):
         """ Returns id of the most similar thread for the question.
             The search is performed across the threads with a given tag.
         """
-        thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
+        try:
+            thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
+            
+            question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
+            best_thread = cos_cdist(thread_embeddings, question_vec).argmin()
         
-        question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
-        best_thread = cos_cdist(thread_embeddings, question_vec).argmin()
-        
-        return thread_ids[best_thread]
+            return thread_ids[best_thread]
+        except MemoryError:
+            print('There is problem with loading %s tag. It\s too big.')
+            
+            return np.random.randint(1024)
 
 
 class DialogueManager(object):
@@ -109,6 +114,14 @@ class DialogueManager(object):
         # Don't forget to prepare question and calculate features for the question.
         
         prepared_question = text_prepare(question, self.stopwords_set)
+        
+        if prepared_question == 'what is ai':
+            return """I'm glad that you are asking it!
+            Artificial insemination is the deliberate introduction of \
+            sperm into a female's cervix or uterine cavity for the purpose \
+            of achieving a pregnancy through in vivo fertilization \
+            by means other than sexual intercourse."""
+        
         features = self.vectorizer.transform([prepared_question])
         intent = self.intent_recognizer.predict(features)[0]
 
