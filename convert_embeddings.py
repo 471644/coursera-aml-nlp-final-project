@@ -4,7 +4,7 @@ import shelve
 from utils import RESOURCE_PATH
 
 def main():
-    if os.path.isfile(RESOURCE_PATH['WORD_EMBEDDINGS']): return
+    if os.path.isfile(RESOURCE_PATH['WORD_EMBEDDINGS'] + '*'): return
     
     data = []
     for line in open(RESOURCE_PATH['WORD_EMBEDDINGS'].replace('.shelve', '.tsv'), encoding='utf-8'):
