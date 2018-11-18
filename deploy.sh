@@ -1,25 +1,26 @@
 #!/bin/bash
  
  BCyan='\033[1;36m'
+ NC='\033[0m'
  
- echo -e "${BCyan}Creating swapfile..."
+ echo "${BCyan}Creating swapfile...${NC}"
  sudo dd if=/dev/zero of=/swapfile bs=1MB count=1200
  sudo chown root:root /swapfile
  sudo chmod 0600 /swapfile
  sudo mkswap /swapfile
  sudo swapon /swapfile
  
- echo -e "${BCyan}Installing python dependencies..."
+ echo "${BCyan}Installing python dependencies...${NC}"
  sudo pip3 install -U pip
  sudo pip3 --no-cache-dir install -r requirements.txt
  
- echo -e "${BCyan}Converting embeddings to shelve format..."
+ echo "${BCyan}Converting embeddings to shelve format...${NC}"
  python3 convert_embeddings.py
  
- echo -e "${BCyan}Enter Telegram Bot API token:"
+ echo "${BCyan}Enter Telegram Bot API token:${NC}"
  read TELEGRAM_TOKEN
  
- echo -e "${BCyan}Creating startup script..."
+ echo "${BCyan}Creating startup script...${NC}"
  cat > telegram_bot << EOF
 #!/bin/bash
 tmux new -s telegram_bot
@@ -31,4 +32,4 @@ sudo mv telegram_bot /etc/init.d
 sudo chmod +x /etc/init.d/telegram_bot
 sudo update-rc.d telegram_bot defaults
 
- echo -e "${BCyan}Completed successfully."
+ echo "${BCyan}Completed successfully.${NC}"
