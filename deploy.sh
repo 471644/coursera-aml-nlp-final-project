@@ -1,16 +1,5 @@
 #!/bin/bash
  
-  echo "Install packages..."
-  sudo apt-get update
-  
-  sudo apt-get install --assume-yes software-properties-common curl
-  sudo add-apt-repository --assume-yes ppa:git-core/ppa
-  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
-  sudo apt-get install --assume-yes git git-lfs
-  git lfs install
-  
-  sudo apt-get install --assume-yes tmux apt-transport-https python3-pip
- 
  echo "Install python dependencies..."
  sudo pip3 install -r requirements.txt
  
@@ -31,3 +20,5 @@ EOF
 sudo mv start_telegram_bot.sh /etc/init.d
 sudo chmod +x /etc/init.d/start_telegram_bot.sh
 sudo update-rc.d /etc/init.d/start_telegram_bot.sh defaults
+
+ echo "Completed successfullty."
