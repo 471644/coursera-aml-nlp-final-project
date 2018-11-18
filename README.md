@@ -1,4 +1,4 @@
-# Final project for Coursera Advanced ML specialization, [NLP course](https://www.coursera.org/learn/language-processing/home/welcome)
+# [Final project](https://www.coursera.org/learn/language-processing/peer/xbHJG/stackoverflow-assistant) for Coursera Advanced ML specialization, [NLP course](https://www.coursera.org/learn/language-processing/home/welcome)
 
 Stack Overflow assistant and chit-chat [bot](http://t.me/tQTZwetd_bot) for Telegram.
 
@@ -6,11 +6,11 @@ Stack Overflow assistant and chit-chat [bot](http://t.me/tQTZwetd_bot) for Teleg
 
 ### Assistant part
 
-For both *Intent recognizer* (0.98403 accuracy) and *Tag classifier* (0.78565 accuracy) used ```LogisicRegression``` on ```HashingVectorizer``` features. For most similar thread retrieval I pretrained ```StarSpace``` embeddings and used simple words embeddings summation for text summarization. Most similar thread given by least cosine distance between summarized texts.
+For both *Intent recognizer* (0.98403 accuracy) and *Tag classifier* (0.78565 accuracy) used ```LogisicRegression``` on ```HashingVectorizer``` features. For most similar thread retrieval I pretrained ```StarSpace``` embeddings and used unweighted sum over words embeddings for text summarization. Most similar thread taken by least cosine distance between summarized texts.
 
-### Chit-chat part
+### Chit-chat part ([honor](https://www.coursera.org/learn/language-processing/peer/Tz9WP/custom-conversational-model))
 
-For Chit-chat model used seq2seq approach on char level. Model implemented used Keras with Tensorflow backend and consist of single Embeddings, GRU and Dense layers. Dye to environment constraints I tried to choose hyperparameters and training techniques to train model as small as possible. Therefore, I used single shared GRU layer with 384 units and input length of 32 for both encoder and decoder parts. I decided to avoid any explicit regularization (dropout, weight decay and etc), except additional language modelling task for encoder, which, I believe, also supposed to give usefull gradients for early steps of encoding.
+For chit-chat model used seq2seq approach on chars level. Model implemented used Keras with Tensorflow backend and consist of single Embeddings, GRU and Dense layers. Dye to environment constraints I tried to choose hyperparameters and training techniques to train model as small as possible. Therefore, I used single shared GRU layer with 384 units and input length of 32 for both encoder and decoder parts. To keep model capacity unconstrained I decided to avoid any explicit regularization (dropout, weight decay and etc), except additional language modelling task for encoder, which, I believe, also supposed to give usefull gradients for early steps of encoding.
 
 As dataset I used [Cornell Movie Dialogs](http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html).
 
@@ -40,10 +40,10 @@ Bot: Please.
 
 ### Optimization
 
-Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2GB), so I found crucial next techniques to run service on f1-micro:
+Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2GB), so I found next techniques is crucial to run service on weak machine:
 
 1. Set environment variable ```OMP_NUM_THREADS = 1```, because by default numpy tries to run 4 threads, which multiplies RAM usage by 4.
-2. Change proposed sklearn.metrics.pairwise_distances_argmin to scipy.spatial.distance.cdist, because import of sklearn function pulls a lot of garbage with it.
+2. Change proposed ```sklearn.metrics.pairwise_distances_argmin``` to ```scipy.spatial.distance.cdist```, because import of sklearn function pulls a lot of garbage with it.
 3. Storing StarSpace embeddings in ```shelve``` format on disk.
 4. Change proposed ```TfidVectorizer``` features to ```HashingVectorizer``` and set number of features 2 ^ 16 (instead 2 ^ 20 by default). ```TfidVectorizer``` holds necessary data in python dict which is memory inefficent and in same time ```HashingVectorizer``` requires no additional data at all.
 5. Get rid of proposed ```OneVsRest``` classifier.
