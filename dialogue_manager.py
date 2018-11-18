@@ -29,31 +29,68 @@ class ThreadRanker(object):
 
 class DialogueManager(object):
     def __init__(self, paths):
+        
+        self.paths = paths
+        
         print("Loading resources...")
         
-        self.stopwords_set = unpickle_file(RESOURCE_PATH['STOP_WORDS'])
+        self.stopwords_set = unpickle_file(self.paths['STOP_WORDS'])
 
         # Intent recognition:
-        self.intent_recognizer = unpickle_file(paths['INTENT_RECOGNIZER'])
-        self.vectorizer = unpickle_file(paths['HASHING_VECTORIZER'])
+        self.intent_recognizer = unpickle_file(self.paths['INTENT_RECOGNIZER'])
+        self.vectorizer = unpickle_file(self.paths['HASHING_VECTORIZER'])
 
         self.ANSWER_TEMPLATE = 'I think its about %s\nThis thread might help you: https://stackoverflow.com/questions/%s'
 
         # Goal-oriented part:
-        self.tag_classifier = unpickle_file(paths['TAG_CLASSIFIER'])
-        self.thread_ranker = ThreadRanker(paths)
+        self.tag_classifier = unpickle_file(self.paths['TAG_CLASSIFIER'])
+        self.thread_ranker = ThreadRanker(self.paths)
 
     def create_chitchat_bot(self):
         """Initializes self.chitchat_bot with some conversational model."""
 
-        # Hint: you might want to create and train chatterbot.ChatBot here.
-        # It could be done by creating ChatBot with the *trainer* parameter equals 
-        # "chatterbot.trainers.ChatterBotCorpusTrainer"
-        # and then calling *train* function with "chatterbot.corpus.english" param
+        inp_context = Input(shape=(MAX_LEN,), dtype='int32', name='input_context')
+        inp_reply = Input(shape=(MAX_LEN,), dtype='int32', name='input_utterance')
+
+        embeddings = Embedding(output_dim=EMBEDDINGS_DIM, 
+                               input_dim=VOCAB_SIZE, 
+                               mask_zero=True, 
+                               name='char_embeddings')
+
+        encoder_input = embeddings(inp_context)
+        decoder_input = embeddings(inp_reply)
         
-        ########################
-        #### YOUR CODE HERE ####
-        ########################
+        rnn_layer = GRU(384, return_sequences=True, return_state=True, name='sequence_modeller')
+        output_dense = Dense(VOCAB_SIZE, activation='softmax', name='output')
+
+        encoder_outputs, *encoder_states = rnn_layer(encoder_input)
+        encoder_outputs = output_dense(encoder_outputs)
+        encoder_outputs = Lambda(lambda x: x, name='context_modelling')(encoder_outputs)
+
+        decoder_outputs, *decoder_states = rnn_layer(decoder_input, initial_state=encoder_states)
+        decoder_outputs = output_dense(decoder_outputs)
+        decoder_outputs = Lambda(lambda x: x, name='reply_modelling')(decoder_outputs)
+        
+        bot_model = Model([inp_context, inp_reply], 
+                          [encoder_outputs, decoder_outputs], 
+                          name='generative_conversational_agent')
+        bot_model.load_weights(self.paths['CHIT-CHAT_MODEL_WEIGHTS'])
+        
+        # Encoder
+        
+        encoder_state_input = Input(shape=(LATENT_DIM,))
+        _, encoder_state = rnn_layer(encoder_input, initial_state=[encoder_state_input])
+
+        self.encoder_model = Model([inp_context, encoder_state_input], encoder_state, name='bot_encoder')
+        
+        # Decoder
+        
+        decoder_state_input = Input(shape=(LATENT_DIM,))
+
+        decoder_outputs, decoder_state = rnn_layer(decoder_input, initial_state=[decoder_state_input])
+        decoder_outputs = output_dense(decoder_outputs)
+
+        self.decoder_model = Model([inp_reply, decoder_state_input], [decoder_outputs, decoder_state], name='bot_decoder')
        
     def generate_answer(self, question):
         """Combines stackoverflow and chitchat parts using intent recognition."""
@@ -67,8 +104,7 @@ class DialogueManager(object):
 
         # Chit-chat part:   
         if intent == 'dialogue':
-            # Pass question to chitchat_bot to generate a response.       
-            response = 'ChitChat'
+            response = GCA_response(self.encoder_model, self.encoder_model, question)       
             return response
         
         # Goal-oriented part:
