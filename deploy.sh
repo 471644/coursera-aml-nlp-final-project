@@ -1,7 +1,15 @@
 #!/bin/bash
  
+ echo "Create swapfile..."
+ sudo dd if=/dev/zero of=/swapfile bs=1MB count=1200
+ sudo chown root:root /swapfile
+ sudo chmod 0600 /swapfile
+ sudo mkswap /swapfile
+ sudo swapon /swapfile
+ 
  echo "Install python dependencies..."
- sudo pip3 install -r requirements.txt
+ sudo pip3 install -U pip
+ sudo pip3 --no-cache-dir install -r requirements.txt
  
  echo "Convert embeddings to shelve format..."
  python3 convert_embeddings.py
