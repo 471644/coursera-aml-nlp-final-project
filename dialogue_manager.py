@@ -115,7 +115,7 @@ class DialogueManager(object):
         
         prepared_question = text_prepare(question, self.stopwords_set)
         
-        if prepared_question == 'what is ai':
+        if prepared_question == 'what ai':
             return """I'm glad that you are asking it!
             Artificial insemination is the deliberate introduction of \
             sperm into a female's cervix or uterine cavity for the purpose \
