@@ -22,14 +22,9 @@
  
  echo "${BCyan}Creating service...${NC}"
  
- cat > start_telegram_bot.sh << EOF
-#!/bin/bash
-python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
-EOF
-
  cat > telegram_bot << EOF
 #!/bin/bash
-tmux new -s telegram_bot -d "bash --init-file $(pwd)/start_telegram_bot.sh"
+python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
 EOF
 
 sudo mv telegram_bot /etc/init.d
