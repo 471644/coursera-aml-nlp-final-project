@@ -1,22 +1,21 @@
 # encoding=utf8
 
-import pickle
 import re
-import numpy as np
 import scipy
 import shelve
+import pickle
+import numpy as np
 
 # Paths for all resources for the bot.
 RESOURCE_PATH = {
     'INTENT_RECOGNIZER': './models/intent_recognizer.pkl',
     'TAG_CLASSIFIER': './models/tag_classifier.pkl',
     'HASHING_VECTORIZER': './models/hashing_vectorizer.pkl',
-    'THREAD_EMBEDDINGS_FOLDER': 'thread_embeddings_by_tags',
+    'THREAD_EMBEDDINGS_FOLDER': './data/thread_embeddings_by_tags',
     'WORD_EMBEDDINGS': './data/starspace_embeddings.shelve',
     'STOP_WORDS': './data/stopwords.pkl',
     'CHIT-CHAT_MODEL_WEIGHTS': './models/chit-chat_model_weights.h5'
 }
-
 
 def text_prepare(text, stopwords_set):
     """Performs tokenization and simple preprocessing."""
@@ -30,7 +29,6 @@ def text_prepare(text, stopwords_set):
     text = ' '.join([x for x in text.split() if x and x not in stopwords_set])
 
     return text.strip()
-
 
 def load_embeddings(embeddings_path):
     """Loads pre-trained word embeddings from tsv file.
@@ -75,9 +73,7 @@ def unpickle_file(filename):
         return pickle.load(f)
     
 def cos_cdist(matrix, vector):
-    """
-    Compute the cosine distances between each row of matrix and vector.
-    """
+    """Computes the cosine distances between each row of matrix and vector."""
     v = vector.reshape(1, -1)
     return scipy.spatial.distance.cdist(matrix, v, 'cosine').reshape(-1)
 
@@ -100,6 +96,7 @@ EMBEDDINGS_DIM = 16
 VOCAB_SIZE = len(char2id)
 
 def text2seq(text, max_len):
+    """Converts sequence of chars to sequence of indices and preserves special characters."""
     start = [char2id[START_SYMBOL]]
     chars_ids = [char2id[text[i]] for i in range(min(max_len - 2, len(text)))]
     end = [char2id[END_SYMBOL]]
@@ -108,6 +105,7 @@ def text2seq(text, max_len):
     return start + chars_ids + end + padding
 
 def seq2text(seq, remove_special=True):
+    """Converts sequence of indices to sequence of char and removes special characters."""
     text = ''.join(map(id2char.get, seq))
 
     if remove_special:
@@ -119,7 +117,7 @@ def seq2text(seq, remove_special=True):
     return text
 
 def GCA_response(encoder, decoder, context, max_steps=MAX_LEN):
-  
+    """Uses keras encoder and decoder models for generating response w.r.t. context."""
     rnn_state = [np.zeros((1, LATENT_DIM))]
 
     context = np.array(text2seq(context, MAX_LEN)).reshape(1, -1)
@@ -129,7 +127,6 @@ def GCA_response(encoder, decoder, context, max_steps=MAX_LEN):
     response_partial[0, 0] = char2id[START_SYMBOL]
     
     response = []
-    
     for i in range(1, min(max_steps, MAX_LEN)):
         output_tokens, *rnn_state = decoder.predict([response_partial] + rnn_state)
         

@@ -4,17 +4,18 @@
 import warnings
 warnings.filterwarnings("ignore")
 
-import requests
-import time
-import argparse
 import os
-import json
+os.environ["OMP_NUM_THREADS"] = "1" # fix for greedy numpy behavior
 
+import time
+import json
+import argparse
+
+import requests
 from requests.compat import urljoin
 
 from dialogue_manager import DialogueManager
 from utils import *
-
 
 class BotHandler(object):
     """

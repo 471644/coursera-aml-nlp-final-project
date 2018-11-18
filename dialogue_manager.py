@@ -1,9 +1,11 @@
 # encoding=utf8
 
 import os
-# from chatterbot import ChatBot
-from utils import *
 
+from keras.models import Model
+from keras.layers import Input, Embedding, GRU, Dense, Lambda
+
+from utils import *
 
 class ThreadRanker(object):
     def __init__(self, paths):
@@ -49,16 +51,13 @@ class DialogueManager(object):
         # Chit-chat part:
         self.create_chitchat_bot()
         
-        print('Test chit-chat model:')
+        print('\nTest chit-chat model:')
         context = 'Hello!'
         print('Context:', context)
-        print('Response:', GCA_response(self.encoder_model, self.decoder_model, context))
+        print('Response:', GCA_response(self.encoder_model, self.decoder_model, context), end='\n\n')
 
     def create_chitchat_bot(self):
         """Initializes self.chitchat_bot with some conversational model."""
-        
-        from keras.models import Model
-        from keras.layers import Input, Embedding, GRU, Dense, Lambda
 
         inp_context = Input(shape=(MAX_LEN,), dtype='int32', name='input_context')
         inp_reply = Input(shape=(MAX_LEN,), dtype='int32', name='input_utterance')
@@ -71,7 +70,7 @@ class DialogueManager(object):
         encoder_input = embeddings(inp_context)
         decoder_input = embeddings(inp_reply)
         
-        rnn_layer = GRU(384, return_sequences=True, return_state=True, name='sequence_modeller')
+        rnn_layer = GRU(LATENT_DIM, return_sequences=True, return_state=True, name='sequence_modeller')
         output_dense = Dense(VOCAB_SIZE, activation='softmax', name='output')
 
         encoder_outputs, *encoder_states = rnn_layer(encoder_input)
