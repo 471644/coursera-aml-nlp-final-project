@@ -2,7 +2,14 @@
  
   echo "Install packages..."
   sudo apt-get update
-  sudo apt-get install --assume-yes git git-lfs tmux software-properties-common apt-transport-https python3-pip
+  
+  sudo apt-get install --assume-yes software-properties-common curl
+  sudo add-apt-repository --assume-yes ppa:git-core/ppa
+  curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+  sudo apt-get install --assume-yes git git-lfs
+  git lfs install
+  
+  sudo apt-get install --assume-yes tmux apt-transport-https python3-pip
  
  echo "Install python dependencies..."
  sudo pip3 install -r requirements.txt
