@@ -22,25 +22,10 @@
  
  echo "${BCyan}Creating service...${NC}"
  cat > telegram_bot << EOF
-#!/bin/sh
-# kFreeBSD do not accept scripts as interpreters, using #!/bin/sh and sourcing.
-if [ true != "$INIT_D_SCRIPT_SOURCED" ] ; then
-    set "$0" "$@"; INIT_D_SCRIPT_SOURCED=true . /lib/init/init-d-script
-fi
-### BEGIN INIT INFO
-# Provides:          telegram_bot
-# Required-Start:    $remote_fs $syslog
-# Required-Stop:     $remote_fs $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Stack Overflow assistant and chit-chat bot for Telegram
-### END INIT INFO
-
-# Author: Georgy Ignatov <vBLFTePebWNi6c@gmail.com>
-
-DESC="Stack Overflow assistant and chit-chat bot for Telegram"
-DAEMON="python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN"
-EOF
+#!/bin/bash
+tmux new -s telegram_bot
+python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
+tmux detach
 
 sudo mv telegram_bot /etc/init.d
 sudo chmod +x /etc/init.d/telegram_bot
