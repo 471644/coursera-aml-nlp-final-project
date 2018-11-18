@@ -21,9 +21,15 @@
  read TELEGRAM_TOKEN
  
  echo "${BCyan}Creating service...${NC}"
+ 
+ cat > start_telegram_bot.sh << EOF
+#!/bin/bash
+python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
+EOF
+
  cat > telegram_bot << EOF
 #!/bin/bash
-tmux new -s telegram_bot -d "python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN"
+tmux new -d -s telegram_bot $(pwd)/start_telegram_bot.sh
 EOF
 
 sudo mv telegram_bot /etc/init.d
