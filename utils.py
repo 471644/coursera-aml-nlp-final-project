@@ -1,5 +1,6 @@
 # encoding=utf8
 
+import os
 import re
 import scipy
 import shelve
@@ -8,14 +9,17 @@ import numpy as np
 
 # Paths for all resources for the bot.
 RESOURCE_PATH = {
-    'INTENT_RECOGNIZER': './models/intent_recognizer.pkl',
-    'TAG_CLASSIFIER': './models/tag_classifier.pkl',
-    'HASHING_VECTORIZER': './models/hashing_vectorizer.pkl',
-    'THREAD_EMBEDDINGS_FOLDER': './data/thread_embeddings_by_tags',
-    'WORD_EMBEDDINGS': './data/starspace_embeddings.shelve',
-    'STOP_WORDS': './data/stopwords.pkl',
-    'CHIT-CHAT_MODEL_WEIGHTS': './models/chit-chat_model_weights.h5'
+    'INTENT_RECOGNIZER': 'models/intent_recognizer.pkl',
+    'TAG_CLASSIFIER': 'models/tag_classifier.pkl',
+    'HASHING_VECTORIZER': 'models/hashing_vectorizer.pkl',
+    'THREAD_EMBEDDINGS_FOLDER': 'data/thread_embeddings_by_tags',
+    'WORD_EMBEDDINGS': 'data/starspace_embeddings.shelve',
+    'STOP_WORDS': 'data/stopwords.pkl',
+    'CHIT-CHAT_MODEL_WEIGHTS': 'models/chit-chat_model_weights.h5'
 }
+
+for key, value in RESOURCE_PATH.items():
+    RESOURCE_PATH[key] = os.path.join(os.path.dirname(__file__), value)
 
 def text_prepare(text, stopwords_set):
     """Performs tokenization and simple preprocessing."""
