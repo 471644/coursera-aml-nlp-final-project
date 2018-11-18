@@ -26,6 +26,7 @@
 tmux new -s telegram_bot
 python3 $(pwd)/main_bot.py --token $TELEGRAM_TOKEN
 tmux detach
+EOF
 
 sudo mv telegram_bot /etc/init.d
 sudo chmod +x /etc/init.d/telegram_bot
