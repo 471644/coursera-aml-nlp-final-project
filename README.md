@@ -10,7 +10,7 @@ For both *Intent recognizer* (0.98403 accuracy) and *Tag classifier* (0.78565 ac
 
 ### Chit-chat part ([honor](https://www.coursera.org/learn/language-processing/peer/Tz9WP/custom-conversational-model))
 
-For chit-chat model used seq2seq approach on chars level. Model implemented used Keras with Tensorflow backend and consist of single Embeddings, GRU and Dense layers. Dye to environment constraints I tried to choose hyperparameters and training techniques to train model as small as possible. Therefore, I used single shared GRU layer with 384 units and input length of 32 for both encoder and decoder parts. To keep model capacity unconstrained I decided to avoid any explicit regularization (dropout, weight decay and etc), except additional language modelling task for encoder, which, I believe, also supposed to give usefull gradients for early steps of encoding.
+For chit-chat model used seq2seq approach on chars level. Model implemented used Keras with Tensorflow backend and consist of single Embeddings, GRU and Dense layers. Dye to environment constraints I tried to choose hyper-parameters and training techniques to train model as small as possible. Therefore, I used single shared GRU layer with 384 units and input length of 32 for both encoder and decoder parts. To keep model capacity unconstrained I decided to avoid any explicit regularization (dropout, weight decay and etc), except additional language modelling task for encoder, which, I believe, also supposed to give useful gradients for early steps of encoding.
 
 As dataset I used [Cornell Movie Dialogs](http://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html).
 
