@@ -64,7 +64,7 @@ Run the following commands in your fresh VM instance's terminal:
   sudo apt-get install git git-lfs
   git lfs install
 
-  sudo apt-get install tmux apt-transport-https python3-pip
+  sudo apt-get install apt-transport-https python3-pip
   
   git clone https://github.com/vBLFTePebWNi6c/coursera-aml-nlp-final-project.git
   cd coursera-aml-nlp-final-project
