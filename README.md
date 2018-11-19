@@ -35,12 +35,11 @@ You:I will consider it as positive answer
 Bot: Accident.
 You:exit
 Bot: Please.
-
 ```
 
 ### Optimization
 
-Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2GB), so I found next techniques is crucial to run service on weak machine:
+Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2GB), so I found next techniques crucial to run service on weak machine:
 
 1. Set environment variable ```OMP_NUM_THREADS = 1```, because by default numpy tries to run 4 threads, which multiplies RAM usage by 4.
 2. Change proposed ```sklearn.metrics.pairwise_distances_argmin``` to ```scipy.spatial.distance.cdist```, because import of sklearn function pulls a lot of garbage with it.
