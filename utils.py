@@ -102,7 +102,7 @@ VOCAB_SIZE = len(char2id)
 def text2seq(text, max_len):
     """Converts sequence of chars to sequence of indices and preserves special characters."""
     start = [char2id[START_SYMBOL]]
-    chars_ids = [char2id[text[i]] for i in range(min(max_len - 2, len(text)))]
+    chars_ids = [char2id.get(text[i], char2id[' ']) for i in range(min(max_len - 2, len(text)))]
     end = [char2id[END_SYMBOL]]
     padding = [char2id[PAD_SYMBOL]] * max(0, max_len - len(text) - 2) 
 
