@@ -33,7 +33,14 @@ class BotHandler(object):
 
     def get_updates(self, offset=None, timeout=30):
         params = {"timeout": timeout, "offset": offset}
-        raw_resp = requests.get(urljoin(self.api_url, "getUpdates"), params)
+        
+        while True:
+            try:
+                raw_resp = requests.get(urljoin(self.api_url, "getUpdates"), params)
+                break
+            except requests.exceptions.ConnectionError:
+                time.sleep(1)
+                
         try:
             resp = raw_resp.json()
         except json.decoder.JSONDecodeError as e:
