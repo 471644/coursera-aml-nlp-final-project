@@ -33,18 +33,16 @@ You:Did you enjoy your training schedule?
 Bot: Want to take a dollar wearon?
 You:I will consider it as positive answer
 Bot: Accident.
-You:exit
-Bot: Please.
 ```
 
 ### Optimization
 
-Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2GB), so I found next techniques crucial to run service on weak machine:
+Early bot setup (even without chit-chat model) consumed a lot of RAM (about >1.2GB), so I found next techniques crucial to run service in circumstances of limited resources:
 
 1. Set environment variable ```OMP_NUM_THREADS = 1```, because by default numpy tries to run 4 threads, which multiplies RAM usage by 4.
 2. Change proposed ```sklearn.metrics.pairwise_distances_argmin``` to ```scipy.spatial.distance.cdist```, because import of sklearn function pulls a lot of garbage with it.
 3. Storing StarSpace embeddings in ```shelve``` format on disk.
-4. Change proposed ```TfidVectorizer``` features to ```HashingVectorizer``` and set number of features 2 ^ 16 (instead 2 ^ 20 by default). ```TfidVectorizer``` holds necessary data in python dict which is memory inefficent and in same time ```HashingVectorizer``` requires no additional data at all.
+4. Change proposed ```TfidfVectorizer``` features to ```HashingVectorizer``` and set number of features 2 ^ 16 (instead 2 ^ 20 by default). ```TfidVectorizer``` holds necessary data in python dict which is memory inefficent and in same time ```HashingVectorizer``` requires no additional data at all.
 5. Get rid of proposed ```OneVsRest``` classifier.
 6. Save stopwords from ```nltk``` in pickle -- ```nltk``` is heavy library.
 
