@@ -45,7 +45,7 @@ class DialogueManager(object):
 
         # Intent recognition:
         self.intent_recognizer = unpickle_file(self.paths['INTENT_RECOGNIZER'])
-        self.vectorizer = unpickle_file(self.paths['HASHING_VECTORIZER'])
+        self.vectorizer = unpickle_file(self.paths['TEXT_VECTORIZER'])
 
         self.ANSWER_TEMPLATE = 'I think its about %s\nThis thread might help you: https://stackoverflow.com/questions/%s'
 
@@ -114,9 +114,6 @@ class DialogueManager(object):
         # Don't forget to prepare question and calculate features for the question.
         
         prepared_question = text_prepare(question, self.stopwords_set)
-        
-        if prepared_question == 'ai':
-            return 'You are very curious!\nArtificial insemination is the deliberate introduction of sperm into a female\'s cervix or uterine cavity for the purpose of achieving a pregnancy through in vivo fertilization by means other than sexual intercourse.'
         
         features = self.vectorizer.transform([prepared_question])
         intent = self.intent_recognizer.predict(features)[0]

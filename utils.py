@@ -3,19 +3,19 @@
 import os
 import re
 import scipy
-import shelve
 import pickle
 import numpy as np
+from sqlitedict import SqliteDict
 
 # Paths for all resources for the bot.
 RESOURCE_PATH = {
     'INTENT_RECOGNIZER': 'models/intent_recognizer.pkl',
     'TAG_CLASSIFIER': 'models/tag_classifier.pkl',
-    'HASHING_VECTORIZER': 'models/hashing_vectorizer.pkl',
+    'TEXT_VECTORIZER': 'models/text_vectorizer.pkl',
     'THREAD_EMBEDDINGS_FOLDER': 'data/thread_embeddings_by_tags',
-    'WORD_EMBEDDINGS': 'data/starspace_embeddings.shelve',
+    'WORD_EMBEDDINGS': 'data/starspace_embeddings.sqlite',
     'STOP_WORDS': 'data/stopwords.pkl',
-    'CHIT-CHAT_MODEL_WEIGHTS': 'models/chit-chat_model_weights.h5'
+    'CHIT-CHAT_MODEL_WEIGHTS': 'models/chit-chat_model_weights.hdf5'
 }
 
 for key, value in RESOURCE_PATH.items():
@@ -24,7 +24,7 @@ for key, value in RESOURCE_PATH.items():
 def text_prepare(text, stopwords_set):
     """Performs tokenization and simple preprocessing."""
     
-    replace_by_space_re = re.compile('[/(){}\[\]\|@,;]')
+    replace_by_space_re = re.compile('[/(){}\[\]|@,;]')
     bad_symbols_re = re.compile('[^0-9a-z #+_]')
 
     text = text.lower()
@@ -44,8 +44,8 @@ def load_embeddings(embeddings_path):
       embeddings - dict mapping words to vectors;
       embeddings_dim - dimension of the vectors.
     """
-    embeddings = shelve.open(embeddings_path, 'r')
-    embeddings_dim = embeddings[list(embeddings.keys())[0]].shape[0]
+    embeddings = SqliteDict(RESOURCE_PATH['WORD_EMBEDDINGS'])
+    embeddings_dim = embeddings[next(embeddings.keys())].shape[0]
     
     return embeddings, embeddings_dim
 
@@ -121,7 +121,7 @@ def seq2text(seq, remove_special=True):
     return text
 
 def GCA_response(encoder, decoder, context, max_steps=MAX_LEN):
-    """Uses keras encoder and decoder models for generating response w.r.t. context."""
+    """Uses keras encoder and decoder models for generating response using context."""
     rnn_state = [np.zeros((1, LATENT_DIM))]
 
     context = np.array(text2seq(context, MAX_LEN)).reshape(1, -1)
