@@ -1,0 +1,19 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+sqlitedict = "*"
+requests = {extras = ["socks"],version = "*"}
+keras = "*"
+tensorflow = "*"
+
+[requires]
+python_version = "3.7"
