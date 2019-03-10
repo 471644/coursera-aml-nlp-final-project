@@ -4,6 +4,9 @@
 import warnings
 warnings.filterwarnings("ignore")
 
+import tensorflow as tf
+tf.logging.set_verbosity(tf.logging.ERROR)
+
 import os
 os.environ["OMP_NUM_THREADS"] = "1" # fix for greedy numpy behavior
 
@@ -32,7 +35,6 @@ console.setFormatter(logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s
 logging.getLogger('').addHandler(console)
 
 bot_logger = logging.getLogger('bot')
-msg_logger = logging.getLogger('message')
 
 class BotHandler(object):
     """
@@ -43,10 +45,13 @@ class BotHandler(object):
             'get_answer' — computes the most relevant on a user's question
     """
 
-    def __init__(self, token, dialogue_manager, proxies=None):
+    def __init__(self, token, dialogue_manager, master_name=None, 
+                 proxies={"https": "socks5://userid04Iz:M3F4gsl@185.20.184.42:5928", "http": "socks5://userid04Iz:M3F4gsl@185.20.184.42:5928"}):
         self.token = token
         self.api_url = "https://api.telegram.org/bot{}/".format(token)
         self.dialogue_manager = dialogue_manager
+        self.master_name = master_name
+        self.dialogs = {}
         
         if proxies:
             self.proxies = proxies
@@ -84,53 +89,90 @@ class BotHandler(object):
         params = {"chat_id": chat_id, "text": text}
         return requests.post(urljoin(self.api_url, "sendMessage"), params, proxies=self.proxies)
 
-    def get_answer(self, question):
+    def get_answer(self, question, user_name=None):
         if question == '/start':
-            return "Hello! I'm just like lowcost Jarvis, but even slightly worse :)\n Try to talk with me!"
-        return self.dialogue_manager.generate_answer(question)
-
+            return "Hello! I'm just like lowcost Jarvis, but even slightly worse :)\nTry to talk with me!"
+        elif len(question) != len(question.encode()):
+            return "Hmm, you are sending some weird characters to me..."
+        elif question.startswith('/') and user_name == self.master_name:
+            return self.serve_master_commands(question)
+        else:
+            answer = self.dialogue_manager.generate_answer(question)
+            
+            self.dialogs[user_name] = self.dialogs.get(user_name, [])
+            self.dialogs[user_name] += ["{}: {}".format(user_name, question)]
+            self.dialogs[user_name] += ["The Bot: {}".format(answer)]
+                
+            return answer
+    
+    def serve_master_commands(self, question):
+        if question == '/report':
+            return "I'm alive, Boss!\nI had handle {} new dialogs with other people.".format(len(self.dialogs))
+        elif question == '/snitch':
+            if len(self.dialogs):
+                report = ""
+                for user_name, history in self.dialogs.items():
+                    report += "--- {} ---\n".format(user_name)
+                    report += "\n".join(history)
+                    report += "\n\n"
+                    
+                self.dialogs = {}
+                return report
+            else:
+                return "There is nothing to read, Boss."
+        else:
+            return "Sorry, Boss! I don't understand :("
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--token", type=str, default="")
+    parser.add_argument("--master", type=str, default=None)
     return parser.parse_args()
-
-def is_unicode(text):
-    return len(text) == len(text.encode())
 
 def main():
     args = parse_args()
+    
     token = args.token
-
-    if not token:
-        if not "TELEGRAM_TOKEN" in os.environ:
-            print("Please, set bot token through --token or TELEGRAM_TOKEN env variable")
-            return
+    if not token and "TELEGRAM_TOKEN" in os.environ:
         token = os.environ["TELEGRAM_TOKEN"]
+        
+    if not token:
+        bot_logger.error("Please, set bot token through --token or TELEGRAM_TOKEN env variable")
+        return
+        
+    master = args.master
+    if not token and "TELEGRAM_MASTER" in os.environ:
+        master = os.environ["TELEGRAM_MASTER"] 
+        
+    if not master:
+        bot_logger.warning("The Bot hasn't master."
+                           "To use master commands,"
+                           "put your username through --master or TELEGRAM_MASTER env variable.")
 
     dialogue_manager = DialogueManager(RESOURCE_PATH)
-    bot = BotHandler(token, dialogue_manager)
+    bot = BotHandler(token, dialogue_manager, master_name=master)
 
     bot_logger.info("Ready to talk!")
     offset = 0
     while True:
+        time.sleep(1)
         updates = bot.get_updates(offset=offset)
         for update in updates:
-            bot_logger.info("An update received.")
-            if "message" in update:
-                chat_id = update["message"]["chat"]["id"]
-                if "text" in update["message"]:
-                    bot_logger.info("Update content: {}".format(update))
-                    username = update['message']['from']['username']
-                    text = update["message"]["text"]
-                    if is_unicode(text):
-                        answer = bot.get_answer(update["message"]["text"])
-                        bot.send_message(chat_id, bot.get_answer(update["message"]["text"]))
-                        msg_logger.info("{}: '{}' --> {}".format(username, text, answer))
-                    else:
-                        bot.send_message(chat_id, "Hmm, you are sending some weird characters to me...")
+            bot_logger.info("Update content: {}".format(update))
             offset = max(offset, update["update_id"] + 1)
-        time.sleep(1)
+            
+            if update.get("message", {}).get("text", None):
+                chat_id = update["message"]["chat"]["id"]
+                user_name = update['message']['from']['username']
+                text = update["message"]["text"]
+                
+                answer = bot.get_answer(text, user_name)
+                bot_logger.info("Answer: {}".format(answer))
+                bot.send_message(chat_id, answer)
         
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        bot_logger.error(str(e))
+        raise

@@ -21,25 +21,17 @@ class ThreadRanker(object):
         """ Returns id of the most similar thread for the question.
             The search is performed across the threads with a given tag.
         """
-        try:
-            thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
-            
-            question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
-            best_thread = cos_cdist(thread_embeddings, question_vec).argmin()
-        
-            return thread_ids[best_thread]
-        except MemoryError:
-            print('There is problem with loading %s tag. It\s too big.')
-            
-            return np.random.randint(1024)
+        thread_ids, thread_embeddings = self.__load_embeddings_by_tag(tag_name)
 
+        question_vec = question_to_vec(question, self.word_embeddings, self.embeddings_dim)
+        best_thread = cos_cdist(thread_embeddings, question_vec).argmin()
+
+        return thread_ids[best_thread]
 
 class DialogueManager(object):
     def __init__(self, paths):
         
         self.paths = paths
-        
-        print("Loading resources...")
         
         self.stopwords_set = unpickle_file(self.paths['STOP_WORDS'])
 
@@ -55,11 +47,6 @@ class DialogueManager(object):
         
         # Chit-chat part:
         self.create_chitchat_bot()
-        
-        print('\nTest chit-chat model:')
-        context = 'Hello!'
-        print('Context:', context)
-        print('Response:', GCA_response(self.encoder_model, self.decoder_model, context), end='\n\n')
 
     def create_chitchat_bot(self):
         """Initializes self.chitchat_bot with some conversational model."""
@@ -92,14 +79,12 @@ class DialogueManager(object):
         bot_model.load_weights(self.paths['CHIT-CHAT_MODEL_WEIGHTS'])
         
         # Encoder
-        
         encoder_state_input = Input(shape=(LATENT_DIM,))
         _, encoder_state = rnn_layer(encoder_input, initial_state=[encoder_state_input])
 
         self.encoder_model = Model([inp_context, encoder_state_input], encoder_state, name='bot_encoder')
         
         # Decoder
-        
         decoder_state_input = Input(shape=(LATENT_DIM,))
 
         decoder_outputs, decoder_state = rnn_layer(decoder_input, initial_state=[decoder_state_input])

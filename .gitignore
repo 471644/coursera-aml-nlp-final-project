@@ -1,9 +1,7 @@
 .directory
 .ipynb*
-Pipfile
 start.sh
 .idea
 *.pyc
-*.sqlite
 *.log
 
